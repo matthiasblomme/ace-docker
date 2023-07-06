@@ -9,50 +9,75 @@
 #
 # This might require a local directory with the right permissions, or changing the userid further down . . .
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal as builder
+FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 
-RUN microdnf update && microdnf install util-linux curl tar
+RUN microdnf update -y && microdnf install -y util-linux tar unzip
 
-ARG USERNAME
-ARG PASSWORD
-ARG DOWNLOAD_URL=http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/integration/12.0.4.0-ACE-LINUX64-DEVELOPER.tar.gz
+# download and unzip aws cli
+RUN mkdir -p /opt/aws/cli
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/opt/aws/awscliv2.zip"
 
-RUN mkdir -p /opt/ibm/ace-12 \
-    && if [ -z $USERNAME ]; then curl ${DOWNLOAD_URL}; else curl -u "${USERNAME}:${PASSWORD}" ${DOWNLOAD_URL}; fi | \
-    tar zx --absolute-names \
+RUN unzip /opt/aws/awscliv2.zip -d /opt/aws/cli
+
+# download and unzip the ibm binaries
+RUN mkdir -p /opt/ibm/ace-12
+COPY /binaries/12.0-ACE-LINUXX64-12.0.*.0.tar.gz /opt/ibm/ace12.tar.gz
+
+RUN tar -xvf /opt/ibm/ace12.tar.gz \
     --exclude ace-12.0.*.0/tools \
     --exclude ace-12.0.*.0/server/tools/ibm-dfdl-java.zip \
     --exclude ace-12.0.*.0/server/tools/proxyservlet.war \
     --exclude ace-12.0.*.0/server/bin/TADataCollector.sh \
     --exclude ace-12.0.*.0/server/transformationAdvisor/ta-plugin-ace.jar \
-    --strip-components 1 \
-    --directory /opt/ibm/ace-12
+    --strip-components=1 \
+    -C /opt/ibm/ace-12/
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal
 
-RUN microdnf update && microdnf install findutils util-linux && microdnf clean all
+# start from clean environment
+FROM registry.access.redhat.com/ubi9/ubi-minimal
+
+RUN microdnf update -y && microdnf install -y findutils util-linux git && microdnf clean -y all
 
 # Force reinstall tzdata package to get zoneinfo files
 RUN microdnf reinstall tzdata -y
 
-# Prevent errors about having no terminal when using apt-get
-ENV DEBIAN_FRONTEND noninteractive
-
-# Install ACE v12.0.4.0 and accept the license
+# Install ACE and accept the license
 COPY --from=builder /opt/ibm/ace-12 /opt/ibm/ace-12
 RUN /opt/ibm/ace-12/ace make registry global accept license deferred \
     && useradd --uid 1001 --create-home --home-dir /home/aceuser --shell /bin/bash -G mqbrkrs aceuser \
     && su - aceuser -c "export LICENSE=accept && . /opt/ibm/ace-12/server/bin/mqsiprofile && mqsicreateworkdir /home/aceuser/ace-server" \
     && echo ". /opt/ibm/ace-12/server/bin/mqsiprofile" >> /home/aceuser/.bashrc
 
+# Get aws cli
+COPY --from=builder /opt/aws/cli /opt/aws/cli
+
 # Add required license as text file in Liceses directory (GPL, MIT, APACHE, Partner End User Agreement, etc)
 COPY /licenses/ /licenses/
 
+# Add build resources
+#COPY /runtime/ /home/aceuser/ace-server/
+COPY /libraries/ /home/aceuser/ace-server/run
+COPY /sources/ /home/aceuser/sources/
+COPY /scripts/ /home/aceuser/scripts/
+
+USER root
+RUN mkdir /home/aceuser/artifact
+RUN chown -R 1001:1001 /home/aceuser/
+
 # aceuser
 USER 1001
+#Install AWS CLI
+RUN /opt/aws/cli/aws/install -i ~/.local/aws-cli -b ~/.local/bin
+
+# Setup aws cli environment
+ENV AWS_ACCESS_KEY_ID=aa \
+    AWS_SECRET_ACCESS_KEY=aa
+RUN /home/aceuser/.local/bin/aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+RUN /home/aceuser/.local/bin/aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+#RUN aws s3 cp s3://esb-binaries/12.0-ACE-LINUXX64-12.0.9.0.tar.gz /opt/ibm/ace-12/ace.tar.gz
 
 # Expose ports.  7600, 7800, 7843 for ACE;
 EXPOSE 7600 7800 7843
 
-# Set entrypoint to run the server
-ENTRYPOINT ["bash", "-c", ". /opt/ibm/ace-12/server/bin/mqsiprofile && IntegrationServer -w /home/aceuser/ace-server"]
+# Set entrypoint for login shell
+WORKDIR "/home/aceuser/ace-server"
