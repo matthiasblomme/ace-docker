@@ -160,7 +160,7 @@ Security:
 
 Defaults:
   defaultApplication: 'DefaultApp'            # Name a default application under which independent resources will be placed
-  policyProject: 'LUMINUS_SIS_POL'  # Name of the Policy project that will be used for unqualified Policy references, default is 'DefaultPolicies'
+  policyProject: '$$DefaultPolicy$$'  # Name of the Policy project that will be used for unqualified Policy references, default is 'DefaultPolicies'
   Policies:
     # Set default policy names, optionally qualified with a policy project as {policy project}:name
     #monitoringProfile: ''                  # Default Monitoring profile

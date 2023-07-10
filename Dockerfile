@@ -9,20 +9,20 @@
 #
 # This might require a local directory with the right permissions, or changing the userid further down . . .
 
+#use a builder to start from
 FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 
+#install basic linux utils
 RUN microdnf update -y && microdnf install -y util-linux tar unzip
 
 # download and unzip aws cli
 RUN mkdir -p /opt/aws/cli
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/opt/aws/awscliv2.zip"
-
 RUN unzip /opt/aws/awscliv2.zip -d /opt/aws/cli
 
 # download and unzip the ibm binaries
 RUN mkdir -p /opt/ibm/ace-12
 COPY /binaries/12.0-ACE-LINUXX64-12.0.*.0.tar.gz /opt/ibm/ace12.tar.gz
-
 RUN tar -xvf /opt/ibm/ace12.tar.gz \
     --exclude ace-12.0.*.0/tools \
     --exclude ace-12.0.*.0/server/tools/ibm-dfdl-java.zip \
@@ -36,6 +36,7 @@ RUN tar -xvf /opt/ibm/ace12.tar.gz \
 # start from clean environment
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
+#install basic linux utils
 RUN microdnf update -y && microdnf install -y findutils util-linux git && microdnf clean -y all
 
 # Force reinstall tzdata package to get zoneinfo files
@@ -48,23 +49,26 @@ RUN /opt/ibm/ace-12/ace make registry global accept license deferred \
     && su - aceuser -c "export LICENSE=accept && . /opt/ibm/ace-12/server/bin/mqsiprofile && mqsicreateworkdir /home/aceuser/ace-server" \
     && echo ". /opt/ibm/ace-12/server/bin/mqsiprofile" >> /home/aceuser/.bashrc
 
-# Get aws cli
+# Get AWS cli
 COPY --from=builder /opt/aws/cli /opt/aws/cli
 
 # Add required license as text file in Liceses directory (GPL, MIT, APACHE, Partner End User Agreement, etc)
 COPY /licenses/ /licenses/
 
-# Add build resources
-#COPY /runtime/ /home/aceuser/ace-server/
-COPY /libraries/ /home/aceuser/ace-server/run
-COPY /sources/ /home/aceuser/sources/
+# Add build and test scripts
 COPY /scripts/ /home/aceuser/scripts/
 
+# Todo: Add build to build pipeline, this is only for local testing
+COPY /runtime/ /home/aceuser/runtimeconfiguration
+COPY /libraries/ /home/aceuser/ace-server/run
+COPY /sources/ /home/aceuser/sources
+
+# Create artifact directory and set proper dir authorizations
 USER root
 RUN mkdir /home/aceuser/artifact
 RUN chown -R 1001:1001 /home/aceuser/
 
-# aceuser
+# As aceuser ...
 USER 1001
 #Install AWS CLI
 RUN /opt/aws/cli/aws/install -i ~/.local/aws-cli -b ~/.local/bin
