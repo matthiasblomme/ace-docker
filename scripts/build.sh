@@ -20,5 +20,5 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-echo "running package --input-path $sourceDir --output-bar-file $barFile --compile-maps-and-schemas $projectFlags"
-ibmint package --input-path $sourceDir --output-bar-file "$barFile" --compile-maps-and-schemas $projectFlags
+echo "running ibmint package --input-path $sourceDir --output-bar-file $barFile --compile-maps-and-schemas $projectFlags --trace /home/aceuser/sources/trace.log"
+ibmint package --input-path $sourceDir --output-bar-file "$barFile" --compile-maps-and-schemas $projectFlags --trace /home/aceuser/sources/trace.log
