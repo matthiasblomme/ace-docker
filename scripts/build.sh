@@ -1,8 +1,9 @@
 #!/bin/bash
+sourceDir=$1
+shift
+echo "sourceDir: $sourceDir"
 projectName=$1
 echo "projectName: $projectName"
-sourceDir=/home/aceuser/sources
-echo "sourceDir: $sourceDir"
 artefactDir=/home/aceuser/artefact
 echo "artefactDir: $artefactDir"
 barFile="$artefactDir/$projectName.bar"
@@ -22,3 +23,4 @@ done
 
 echo "running ibmint package --input-path $sourceDir --output-bar-file $barFile --compile-maps-and-schemas $projectFlags --trace /home/aceuser/sources/trace.log"
 ibmint package --input-path $sourceDir --output-bar-file "$barFile" --compile-maps-and-schemas $projectFlags --trace /home/aceuser/sources/trace.log
+echo "created $barFile"

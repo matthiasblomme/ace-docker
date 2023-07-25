@@ -9,20 +9,37 @@
 #
 # This might require a local directory with the right permissions, or changing the userid further down . . .
 
-#use a builder to start from
+# use a builder to start from
 FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 
-#install basic linux utils
-RUN microdnf update -y && microdnf install -y util-linux tar unzip
+# Build arguments
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
+ARG ACE_VERSION
 
-# download and unzip aws cli
+# Set env variables
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+ENV ACE_VERSION=${ACE_VERSION}
+
+# Install basic linux utils
+RUN microdnf update -y && microdnf install -y util-linux tar unzip findutils
+# Download and install aws cli
+RUN echo $AWS_ACCESS_KEY_ID
+RUN echo $AWS_SECRET_ACCESS_KEY
 RUN mkdir -p /opt/aws/cli
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/opt/aws/awscliv2.zip"
-RUN unzip /opt/aws/awscliv2.zip -d /opt/aws/cli
+RUN unzip /opt/aws/awscliv2.zip -d /opt/aws/cli > /dev/null 2>&1
+RUN /opt/aws/cli/aws/install
+RUN aws --version
 
-# download and unzip the ibm binaries
+# Setup aws cli environment end download binaries
+RUN aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+RUN aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 RUN mkdir -p /opt/ibm/ace-12
-COPY /binaries/12.0-ACE-LINUXX64-12.0.*.0.tar.gz /opt/ibm/ace12.tar.gz
+RUN aws s3 cp s3://esb-binaries/12.0-ACE-LINUXX64-${ACE_VERSION}.tar.gz /opt/ibm/ace12.tar.gz
+
+# Unzip the ibm binaries without the toolkit
 RUN tar -xvf /opt/ibm/ace12.tar.gz \
     --exclude ace-12.0.*.0/tools \
     --exclude ace-12.0.*.0/server/tools/ibm-dfdl-java.zip \
@@ -30,17 +47,27 @@ RUN tar -xvf /opt/ibm/ace12.tar.gz \
     --exclude ace-12.0.*.0/server/bin/TADataCollector.sh \
     --exclude ace-12.0.*.0/server/transformationAdvisor/ta-plugin-ace.jar \
     --strip-components=1 \
-    -C /opt/ibm/ace-12/
+    -C /opt/ibm/ace-12/ > /dev/null 2>&1
 
 
-# start from clean environment
+# Start from clean environment
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
-#install basic linux utils
+# Set environment variables
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+ENV ACE_VERSION=${ACE_VERSION}
+
+# Install basic linux utils
 RUN microdnf update -y && microdnf install -y findutils util-linux git && microdnf clean -y all
 
 # Force reinstall tzdata package to get zoneinfo files
 RUN microdnf reinstall tzdata -y
+
+# Install aws cli
+COPY --from=builder /opt/aws/cli /opt/aws/cli
+RUN /opt/aws/cli/aws/install
+RUN aws --version
 
 # Install ACE and accept the license
 COPY --from=builder /opt/ibm/ace-12 /opt/ibm/ace-12
@@ -49,36 +76,16 @@ RUN /opt/ibm/ace-12/ace make registry global accept license deferred \
     && su - aceuser -c "export LICENSE=accept && . /opt/ibm/ace-12/server/bin/mqsiprofile && mqsicreateworkdir /home/aceuser/ace-server" \
     && echo ". /opt/ibm/ace-12/server/bin/mqsiprofile" >> /home/aceuser/.bashrc
 
-# Get AWS cli
-COPY --from=builder /opt/aws/cli /opt/aws/cli
-
 # Add required license as text file in Liceses directory (GPL, MIT, APACHE, Partner End User Agreement, etc)
 COPY /licenses/ /licenses/
 
 # Add build and test scripts
 COPY /scripts/ /home/aceuser/scripts/
 
-# Todo: Add build to build pipeline, this is only for local testing
-COPY /runtime/ /home/aceuser/runtimeconfiguration
-COPY /libraries/ /home/aceuser/ace-server/run
-COPY /sources/ /home/aceuser/sources
-
 # Create artifact directory and set proper dir authorizations
 USER root
 RUN mkdir /home/aceuser/artifact
 RUN chown -R 1001:1001 /home/aceuser/
-
-# As aceuser ...
-USER 1001
-#Install AWS CLI
-RUN /opt/aws/cli/aws/install -i ~/.local/aws-cli -b ~/.local/bin
-
-# Setup aws cli environment
-ENV AWS_ACCESS_KEY_ID=aa \
-    AWS_SECRET_ACCESS_KEY=aa
-RUN /home/aceuser/.local/bin/aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-RUN /home/aceuser/.local/bin/aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-#RUN aws s3 cp s3://esb-binaries/12.0-ACE-LINUXX64-12.0.9.0.tar.gz /opt/ibm/ace-12/ace.tar.gz
 
 # Expose ports.  7600, 7800, 7843 for ACE;
 EXPOSE 7600 7800 7843

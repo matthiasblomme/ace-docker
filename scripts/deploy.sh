@@ -1,13 +1,11 @@
 #!/bin/bash
 projectName=$1
-echo "projectName: $projectName"
-sourceDir=/home/aceuser/sources
-echo "sourceDir: $sourceDir"
-artefactDir=/home/aceuser/artefact
-echo "artefactDir: $artefactDir"
-barFile="$artefactDir/$projectName.bar"
+barFile=$1
 echo "barFile: $barFile"
 workDir=/home/aceuser/ace-server
 echo "workDir: $workDir"
 
+. /opt/ibm/ace-12/server/bin/mqsiprofile
+
+echo "running deploy --input-bar-file $barFile --output-work-directory $workDir"
 ibmint deploy --input-bar-file "$barFile" --output-work-directory "$workDir"

@@ -46,7 +46,7 @@ serverConfVersion: 1
 #iwaGSSHostnameOverride: ''            # Set the local hostname to be used in GSS-controlled Kerberos authentication from a SOAP or HTTP input node. Can also be set
                                        # via the MQSI_GSS_HOSTNAME_OVERRIDE environment variable, which takes precedence over this setting.
 
-additionalJpluginDirectories: 'udn'       # Extra directories to search for Java plugins; can reference shared libraries using '{shlibname}' syntax.
+additionalJpluginDirectories: '/home/aceuser/ace-server/udn'       # Extra directories to search for Java plugins; can reference shared libraries using '{shlibname}' syntax.
 #additionalSharedClassesDirectories: 'libs' # Extra directories to add to the shared classloader search path; can reference shared libraries using '{shlibname}' syntax.
 #abendDirectory: ''                     # Set the directory to store abends and related error files
 #traceDirectory: ''                     # Set the directory to store trace files
