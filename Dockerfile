@@ -86,6 +86,7 @@ COPY /scripts/ /home/aceuser/scripts/
 USER root
 RUN mkdir /home/aceuser/artifact
 RUN chown -R 1001:1001 /home/aceuser/
+RUN chmod 777 /home/aceuser/scripts/
 
 # Expose ports.  7600, 7800, 7843 for ACE;
 EXPOSE 7600 7800 7843
