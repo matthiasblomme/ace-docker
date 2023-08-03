@@ -21,4 +21,4 @@ BAR_FILE_VERSION=$(./increment_version.sh ./version.txt)
 #upload bar file
 aws codeartifact upload-package --domain $AWS_CA_DOMAIN --domain-owner $AWS_CA_DOMAIN_OWNER --repository $AWS_CA_REPO --format generic --namespace esb-artifacts --package-version $BAR_FILE_VERSION --file $BAR_FILE
 #cleanup authorization file
-rm auth.txt
+rm auth.txt version.txt
