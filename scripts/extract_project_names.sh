@@ -2,6 +2,11 @@
 
 aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
 aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+aws configure set region $AWS_REGION
+AWS_CA_REPO="ESB-Artifacts"
+AWS_CA_DOMAIN="luminus"
+AWS_CA_DOMAIN_OWNER="281885323515"
+AWS_REGION="eu-west-3"
 
 # Declare an empty array to store required project names
 project_names=()
@@ -38,7 +43,27 @@ while true; do
 	# Perform download for all required projects
 	for name in "${final_project_names[@]}"; do
 		echo "Downloading required project: $name"
-		aws s3 cp s3://esb-artefacts/${name}.bar /home/aceuser/sources/
+
+		latest_version=$(aws codeartifact list-package-versions \
+        --domain $AWS_CA_DOMAIN \
+        --domain-owner $AWS_CA_DOMAIN_OWNER \
+        --repository $AWS_CA_REPO \
+        --format generic \
+        --namespace esb-artifacts \
+        --package-name '${name}.bar' \
+        --output text)
+
+    aws codeartifact get-package-version-assets \
+      --domain $AWS_CA_DOMAIN \
+      --domain-owner $AWS_CA_DOMAIN_OWNER \
+      --repository $AWS_CA_REPO \
+      --format generic \
+      --namespace esb-artifacts \
+      --package-name '${name}.bar' \
+      --package-version "$latest_version" \
+      --asset '${name}.bar' \
+      --output-dir /home/aceuser/sources/
+
 		echo "Deploying $name"
 		/home/aceuser/scripts/deploy.sh /home/aceuser/sources/${name}.bar
 	done

@@ -1,5 +1,5 @@
 #!/bin/bash
-projectName=$1
+
 barFile=$1
 echo "barFile: $barFile"
 workDir=/home/aceuser/ace-server
