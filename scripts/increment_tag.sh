@@ -16,7 +16,7 @@ current_dir=$(pwd)
 cd "$target_dir" || exit 1
 
 # List the latest git tag
-latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+latest_tag=$(git describe --tags --abbrev=0)
 
 echo "Found tag $latest_tag"
 
@@ -44,7 +44,7 @@ fi
 echo "$latest_tag" > "$current_dir/artifact/tag.txt"
 echo "Creating new tag $latest_tag"
 # Set and push the latest tag
-git tag "$latest_tag"
+git tag -a -m "Tag from pipeline build" "$latest_tag"
 git push origin --tags
 # Change back to the original directory
 cd "$current_dir" || exit 1

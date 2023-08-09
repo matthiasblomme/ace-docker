@@ -1,5 +1,6 @@
 #!/bin/bash
 BAR_FILE=$1
+TAG_FILE=$2
 BAR_FILE_VERSION="0.0.0"
 AWS_CA_REPO="ESB-Artifacts"
 AWS_CA_DOMAIN="luminus"
@@ -25,16 +26,7 @@ aws codeartifact login \
     --domain-owner $AWS_CA_DOMAIN_OWNER \
     --region $AWS_REGION
 
-#determine new bar file version
-aws codeartifact list-package-versions \
-    --domain $AWS_CA_DOMAIN \
-    --domain-owner $AWS_CA_DOMAIN_OWNER \
-    --repository $AWS_CA_REPO \
-    --format generic \
-    --namespace esb-artifacts \
-    --package-name '$(basename "$BAR_FILE")' \
-    --output text > version.txt
-BAR_FILE_VERSION=$(./increment_version.sh ./version.txt)
+BAR_FILE_VERSION=$(cat $TAG_FILE | tr -d '\n')
 
 #upload bar file
 aws codeartifact publish-package-version \

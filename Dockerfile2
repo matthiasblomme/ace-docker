@@ -1,0 +1,38 @@
+# Build and run:
+#
+# docker build -t ace:12.0.4.0 -f Dockerfile .
+# docker run -e LICENSE=accept -p 7600:7600 -p 7800:7800 --rm -ti ace:12.0.8.0
+#
+# Can also mount a volume for the work directory:
+#
+# docker run -e LICENSE=accept -v C:\Users\blommma\IBM\ACET12\LuminusPoc\LUMINUS_SIS:/home/aceuser/ace-server -p 7600:7600 -p 7800:7800 --rm -ti ace:12.0.8.0
+#
+# This might require a local directory with the right permissions, or changing the userid further down . . .
+
+FROM ace-server:12.0.8.0 as builder
+
+#run as root
+USER root
+
+#copy over licences
+COPY /licenses/ /licenses/
+COPY /libraries /home/aceuser/bars
+COPY /runtime/server.conf.yaml /home/aceuser/ace-server/server.conf.yaml
+COPY /runtime/shared-classes /home/aceuser/ace-server/shared-classes
+COPY /runtime/udn /home/aceuser/ace-server/udn
+
+#change permissions
+RUN  chmod -R ugo+rwx /home/aceuser
+
+# aceuser
+USER 1000
+
+RUN ace_compile_bars.sh
+
+USER root
+RUN  chmod -R ugo+rwx /home/aceuser
+USER 1000
+
+
+#RUN . /opt/ibm/ace-12/server/bin/mqsiprofile && for FILE in /home/aceuser/bars/*.bar; do ibmint deploy --input-bar-file $FILE --output-work-directory /home/aceuser/ace-server/; done
+#/home/aceuser/ace-server
