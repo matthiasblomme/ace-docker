@@ -1,14 +1,13 @@
 #!/bin/bash
 BAR_FILE=$1
 TAG_FILE=$2
-BAR_FILE_VERSION="0.0.0"
 AWS_CA_REPO="ESB-Artifacts"
 AWS_CA_DOMAIN="luminus"
 AWS_CA_DOMAIN_OWNER="281885323515"
 AWS_REGION="eu-west-3"
 
 #configure aws credentials
-aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID$AWS_ACCESS_KEY_ID
+aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
 aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 aws configure set region $AWS_REGION
 
@@ -18,7 +17,7 @@ aws codeartifact get-authorization-token \
     --domain-owner $AWS_CA_DOMAIN_OWNER \
     --query authorizationToken \
     --output text > auth.txt
-export AWS_PROFILE=./auth.txt
+export AWS_CODEARTIFACT_AUTH_TOKEN=$(cat auth.txt)
 aws codeartifact login \
     --tool twine \
     --repository $AWS_CA_REPO \
@@ -29,17 +28,20 @@ aws codeartifact login \
 BAR_FILE_VERSION=$(cat $TAG_FILE | tr -d '\n')
 
 #upload bar file
-aws codeartifact publish-package-version \
+upload_response=$(aws codeartifact publish-package-version \
     --domain $AWS_CA_DOMAIN \
     --domain-owner $AWS_CA_DOMAIN_OWNER \
     --repository $AWS_CA_REPO \
     --format generic \
     --namespace esb-artifacts \
-    --package '$(basename "$BAR_FILE")' \
+    --package "$(basename $BAR_FILE)" \
     --package-version $BAR_FILE_VERSION \
-    --asset-name '$(basename "$BAR_FILE")' \
+    --asset-name "$(basename $BAR_FILE)" \
     --asset-content $BAR_FILE \
-    --asset-sha256 "$(sha256sum $BAR_FILE | awk '{print $1}')"
+    --asset-sha256 "$(sha256sum $BAR_FILE | awk '{print $1}')")
 
+#build codeartifact url
+artifact_url="https://$AWS_CA_DOMAIN.d.codeartifact.$AWS_REGION.amazonaws.com/$AWS_CA_REPO/generic/$(basename $BAR_FILE)/$BAR_FILE_VERSION/$(basename $BAR_FILE)"
+echo "Uploaded Artifact URL: $artifact_url"
 #cleanup authorization file
-rm auth.txt version.txt
+rm auth.txt

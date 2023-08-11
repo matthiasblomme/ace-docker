@@ -2,6 +2,7 @@
 
 # Get the target directory from command-line argument
 target_dir="$1"
+branch="$2"
 
 # Check if the target directory exists
 if [ ! -d "$target_dir" ]; then
@@ -34,14 +35,26 @@ else
         exit 1
     fi
 
-    # Increment the fix part of the version
+
     IFS='.' read -r major minor fix <<< "$version"
-    ((fix++))
+
+    # increment minor version for feature branches
+    if [[ "$branch" =~ features\/ ]]; then
+      ((minor++))
+      fix=0
+    # increment fix version for fix branches
+    elif [[ "$branch" =~ fix\/ ]]; then
+      ((fix++))
+    else
+      echo "Error: Unsupported branch '$branch'."
+      exit 1
+    fi
+
     latest_tag="$tag_prefix$major.$minor.$fix"
 fi
 
 # Write the major.minor.fix part of the tag to tag.txt in ./artifact directory
-echo "$latest_tag" > "$current_dir/artifact/tag.txt"
+echo "$major.$minor.$fix" > "$current_dir/artifact/tag.txt"
 echo "Creating new tag $latest_tag"
 # Set and push the latest tag
 git tag -a -m "Tag from pipeline build" "$latest_tag"

@@ -2,15 +2,16 @@ export TRIGGER_PROJECT=luminusbe/luminusbe-digital/esb/applications/LegalEntityR
 export TRIGGER_PROJECT_BRANCH=feature/testPipelineTrigger
 export CI_PROJECT_PATH=luminusbe/luminusbe-digital/esb/pipeline/esb_build_pipeline
 export BUILD_PROJECT_NAME=LegalEntityRegistry
-export GLPAT_APPLICATIONS=...
+export GLPAT_APPLICATIONS=glpat-Vz8ncmwfD7Z7_Q73u9rX
 export RUNTIME_CONFIG_URL=gitlab.com/luminusbe/luminusbe-digital/esb/runtime/runtimeconfiguration
-export GLPAT_RUNTIMEDEFINITIONS=...
-export RUNTIME_DEF_URL=luminusbe/luminusbe-digital/esb/runtime/runtimedefinitions
-export CI_JOB_TOKEN=...
+export GLPAT_RUNTIMEDEFINITIONS=glpat-xatwmc6THyomCCXVJQtp
+export RUNTIME_DEF_URL=gitlab.com/luminusbe/luminusbe-digital/esb/runtime/runtimedefinitions
+export CI_JOB_TOKEN=glpat-dRcm79X9E53ZVNu-xNYt
 export AWS_REGION=eu-west-3
+export BAR_FILE=/home/aceuser/artefact/LegalEntityRegistry.bar
 
-git clone --branch $TRIGGER_PROJECT_BRANCH https://gitlab-ci-token:...@gitlab.com/${TRIGGER_PROJECT} /home/aceuser/sources/${BUILD_PROJECT_NAME}
-git clone https://gitlab-ci-token:...@${RUNTIME_CONFIG_URL} /home/aceuser/runtimeconfiguration
+git clone --branch $TRIGGER_PROJECT_BRANCH https://gitlab-ci-token:glpat-dRcm79X9E53ZVNu-xNYt@gitlab.com/${TRIGGER_PROJECT} /home/aceuser/sources/${BUILD_PROJECT_NAME}
+git clone https://gitlab-ci-token:glpat-dRcm79X9E53ZVNu-xNYt@${RUNTIME_CONFIG_URL} /home/aceuser/runtimeconfiguration
 
 grep Policies /home/aceuser/ace-server/server.conf.yaml
 

@@ -54,8 +54,6 @@ RUN tar -xvf /opt/ibm/ace12.tar.gz \
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 # Set environment variables
-ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 ENV ACE_VERSION=${ACE_VERSION}
 
 # Install basic linux utils

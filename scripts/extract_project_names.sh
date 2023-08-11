@@ -9,6 +9,19 @@ aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
 aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 aws configure set region $AWS_REGION
 
+aws codeartifact get-authorization-token \
+    --domain $AWS_CA_DOMAIN \
+    --domain-owner $AWS_CA_DOMAIN_OWNER \
+    --query authorizationToken \
+    --output text > auth.txt
+export AWS_CODEARTIFACT_AUTH_TOKEN=$(cat auth.txt)
+aws codeartifact login \
+    --tool twine \
+    --repository $AWS_CA_REPO \
+    --domain $AWS_CA_DOMAIN \
+    --domain-owner $AWS_CA_DOMAIN_OWNER \
+    --region $AWS_REGION
+
 # Declare an empty array to store required project names
 project_names=()
 final_project_names=()
