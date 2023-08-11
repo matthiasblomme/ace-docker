@@ -39,6 +39,7 @@ upload_response=$(aws codeartifact publish-package-version \
     --asset-name "$(basename $BAR_FILE)" \
     --asset-content $BAR_FILE \
     --asset-sha256 "$(sha256sum $BAR_FILE | awk '{print $1}')")
+echo "$upload_response"
 
 #build codeartifact url
 artifact_url="https://$AWS_CA_DOMAIN.d.codeartifact.$AWS_REGION.amazonaws.com/$AWS_CA_REPO/generic/$(basename $BAR_FILE)/$BAR_FILE_VERSION/$(basename $BAR_FILE)"
