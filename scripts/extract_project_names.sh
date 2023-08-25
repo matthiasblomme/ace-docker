@@ -26,6 +26,12 @@ aws codeartifact login \
 project_names=()
 final_project_names=()
 search_path="/home/aceuser/ace-server/run/"
+dependencies_file="./artifact/dependencies.txt"
+
+# Always add default dependencies
+while IFS= read -r dependency; do
+  project_names+=("${dependency%.bar}")
+done < "$dependencies_file"
 
 # Start the main loop
 while true; do
