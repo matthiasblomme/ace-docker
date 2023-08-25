@@ -10,10 +10,11 @@ while IFS=';' read -r file_name template_file properties; do
   # Split properties into key-value pairs
   IFS=';' read -ra key_values <<< "$properties"
   output_file="${output_path}/${file_name}.yaml"
+  echo "creating $output_file"
   #clear the file if it exists
   echo '' > $output_file
   template_file="/home/aceuser/runtimedefinitions/_Template/${template_file}.yaml"
-  echo "creating $output_file from $template_file"
+  echo "from template $template_file"
   # Open the template file for reading and the new file for writing
   while IFS= read -r line; do
     for key_value in "${key_values[@]}"; do

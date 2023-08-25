@@ -8,8 +8,21 @@ configurations_file=$4
 
 #get bar urls
 bar_urls="$(/home/aceuser/scripts/get_codeArtefact_urls.sh $dependencies_file)";
+config_array=()
+
 #get config urls
-config_array="$(/home/aceuser/scripts/get_codeArtefact_urls.sh $configurations_file)";
+while IFS= read -r line; do
+    # Extract the value of NAME key using regex
+    echo $line
+    if [[ $line =~ NAME=\'([^\'\"]*)\' ]]; then
+      echo "### HIT ###"
+      config_array+=("${BASH_REMATCH[1]}")
+    fi
+done < $configurations_file
+
+for name in "${config_array[@]}"; do
+    echo "$name"
+done
 
 #clear the file if it exists
 echo '' > $output_file
@@ -22,7 +35,9 @@ while IFS= read -r line; do
   fi
 
   if [[ $line == *"\$\$configurationNames\$\$"* ]]; then
-    echo "$config_array" >> "$output_file"
+    for config_entry in "${config_array[@]}"; do
+        echo "    - $config_entry" >> "$output_file"
+    done
     write_original=false
   fi
 
