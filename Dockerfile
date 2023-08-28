@@ -16,11 +16,13 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 ARG AWS_ACCESS_KEY_ID
 ARG AWS_SECRET_ACCESS_KEY
 ARG ACE_VERSION
+ARG SOAPUI_VERSION
 
 # Set env variables
 ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 ENV ACE_VERSION=${ACE_VERSION}
+ENV SOAPUI_VERSION=${SOAPUI_VERSION}
 
 # Install basic linux utils
 RUN microdnf update -y && microdnf install -y util-linux tar unzip findutils
@@ -49,12 +51,14 @@ RUN tar -xvf /opt/ibm/ace12.tar.gz \
     --strip-components=1 \
     -C /opt/ibm/ace-12/ > /dev/null 2>&1
 
+# Download and install SoapUI
+RUN mkdir /opt/soapui
+RUN aws s3 cp s3://esb-binaries/SoapUI-${SOAPUI_VERSION}-linux-bin.tar.gz /opt/
+RUN tar -xzf /opt/SoapUI-${SOAPUI_VERSION}-linux-bin.tar.gz -C /opt/soapui --strip-components=1
+
 
 # Start from clean environment
 FROM registry.access.redhat.com/ubi9/ubi-minimal
-
-# Set environment variables
-ENV ACE_VERSION=${ACE_VERSION}
 
 # Install basic linux utils
 RUN microdnf update -y && microdnf install -y findutils util-linux git && microdnf clean -y all
@@ -73,6 +77,12 @@ RUN /opt/ibm/ace-12/ace make registry global accept license deferred \
     && useradd --uid 1001 --create-home --home-dir /home/aceuser --shell /bin/bash -G mqbrkrs aceuser \
     && su - aceuser -c "export LICENSE=accept && . /opt/ibm/ace-12/server/bin/mqsiprofile && mqsicreateworkdir /home/aceuser/ace-server" \
     && echo ". /opt/ibm/ace-12/server/bin/mqsiprofile" >> /home/aceuser/.bashrc
+
+# Copy SoapUI installation from builder stage
+COPY --from=builder /opt/soapui /opt/soapui
+
+# Set environment variables
+ENV PATH="/opt/soapui/bin:${PATH}"
 
 # Add required license as text file in Liceses directory (GPL, MIT, APACHE, Partner End User Agreement, etc)
 COPY /licenses/ /licenses/
