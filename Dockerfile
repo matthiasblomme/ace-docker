@@ -5,6 +5,7 @@
 #
 # Can also mount a volume for the work directory:
 #
+# docker build -t matthiasblomme/ace.runner:12.0.9.0  --file ./Dockerfile . --build-arg ACE_VERSION=12.0.9.0 --build-arg SOAPUI_VERSION=5.7.1 --build-arg AWS_ACCESS_KEY_ID=xxx --build-arg AWS_SECRET_ACCESS_KEY=xxx
 # docker run -e LICENSE=accept -v /what/ever/dir:/home/aceuser/ace-server -p 7600:7600 -p 7800:7800 --rm -ti ace:12.0.4.0
 #
 # This might require a local directory with the right permissions, or changing the userid further down . . .
@@ -61,7 +62,7 @@ RUN tar -xzf /opt/SoapUI-${SOAPUI_VERSION}-linux-bin.tar.gz -C /opt/soapui --str
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 # Install basic linux utils
-RUN microdnf update -y && microdnf install -y findutils util-linux git && microdnf clean -y all
+RUN microdnf update -y && microdnf install -y findutils util-linux git tar && microdnf clean -y all
 
 # Force reinstall tzdata package to get zoneinfo files
 RUN microdnf reinstall tzdata -y
