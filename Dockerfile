@@ -62,7 +62,7 @@ RUN tar -xzf /opt/SoapUI-${SOAPUI_VERSION}-linux-bin.tar.gz -C /opt/soapui --str
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 # Install basic linux utils
-RUN microdnf update -y && microdnf install -y findutils util-linux git tar && microdnf clean -y all
+RUN microdnf update -y && microdnf install -y findutils util-linux git tar java-11-openjdk-devel && microdnf clean -y all
 
 # Force reinstall tzdata package to get zoneinfo files
 RUN microdnf reinstall tzdata -y
