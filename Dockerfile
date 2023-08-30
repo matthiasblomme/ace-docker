@@ -1,12 +1,11 @@
 # Build and run:
 #
-# docker build -t ace:12.0.4.0 -f Dockerfile .
-# docker run -e LICENSE=accept -p 7600:7600 -p 7800:7800 --rm -ti ace:12.0.4.0
+# docker build -t matthiasblomme/ace.runner:12.0.9.0  --file ./Dockerfile . --build-arg ACE_VERSION=12.0.9.0 --build-arg SOAPUI_VERSION=5.7.1 --build-arg AWS_ACCESS_KEY_ID=xxx --build-arg AWS_SECRET_ACCESS_KEY=xxx
+# docker run -e LICENSE=accept -p 7600:7600 -p 7800:7800 --rm -ti matthiasblomme/ace.runner:12.0.9.0
 #
 # Can also mount a volume for the work directory:
 #
-# docker build -t matthiasblomme/ace.runner:12.0.9.0  --file ./Dockerfile . --build-arg ACE_VERSION=12.0.9.0 --build-arg SOAPUI_VERSION=5.7.1 --build-arg AWS_ACCESS_KEY_ID=xxx --build-arg AWS_SECRET_ACCESS_KEY=xxx
-# docker run -e LICENSE=accept -v /what/ever/dir:/home/aceuser/ace-server -p 7600:7600 -p 7800:7800 --rm -ti ace:12.0.4.0
+# docker run -e LICENSE=accept -v c:\temp\mappedDir:/home/aceuser/ace-server -p 7600:7600 -p 7800:7800 --rm -ti matthiasblomme/ace.runner:12.0.9.0
 #
 # This might require a local directory with the right permissions, or changing the userid further down . . .
 
