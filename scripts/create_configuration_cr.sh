@@ -1,27 +1,35 @@
 #!/bin/bash
 
-#store command line parameters
+# Store command line parameters
 output_path=$1
-properties_file=$2
+resource_path=$2
+properties_file=$3
 
-#read properties file line by line
-echo "reading $properties_file"
+# Read properties file line by line
+echo "Reading $properties_file"
 while IFS=';' read -r file_name template_file properties; do
   # Split properties into key-value pairs
   IFS=';' read -ra key_values <<< "$properties"
   output_file="${output_path}/${file_name}.yaml"
-  echo "creating $output_file"
-  #clear the file if it exists
-  echo '' > $output_file
+  echo "Creating $output_file"
+
+  # Clear the file if it exists
+  echo '' > "$output_file"
+
   template_file="/home/aceuser/runtimedefinitions/_Template/${template_file}.yaml"
-  echo "from template $template_file"
-  # Open the template file for reading and the new file for writing
+  echo "From template $template_file"
+
+  # Read template file line by line
   while IFS= read -r line; do
+    # Process each line using the key-value pairs
     for key_value in "${key_values[@]}"; do
       # Use regex to separate key and value
       if [[ "$key_value" =~ ([^=]*)=(.*) ]]; then
         key="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
+        if [[ "$key" == "DATA" ]]; then
+          value=$(base64 "${resource_path}/${value}")
+        fi
         line="${line//\$\$$key\$\$/$value}"
       fi
     done
