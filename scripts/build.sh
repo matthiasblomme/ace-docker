@@ -1,4 +1,5 @@
 #!/bin/bash
+#TODO only print "created", if the result matches BIP8071I
 sourceDir=$1
 shift
 echo "sourceDir: $sourceDir"

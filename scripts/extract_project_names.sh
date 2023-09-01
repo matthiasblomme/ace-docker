@@ -62,8 +62,6 @@ while true; do
 
 	# Perform download for all required projects
 	for name in "${final_project_names[@]}"; do
-	  # Add to dependencies
-	  echo "$name.bar" >> ./artifact/dependencies.txt
 		echo "Downloading required project: $name"
 		latest_version=$(aws codeartifact list-package-versions \
         --domain $AWS_CA_DOMAIN \
@@ -95,5 +93,15 @@ while true; do
   fi
 
 	unset final_project_names
-	unset project_names
+done
+
+
+#clear output file
+> "./artifact/dependencies.txt"
+#remove duplicates
+unique_project_names=($(echo "${project_names[@]}" | tr ' ' '\n' | sort -u))
+
+for project in "${unique_project_names[@]}"; do
+  # add to dependencies
+  echo "$project.bar" >> ./artifact/dependencies.txt
 done
