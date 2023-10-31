@@ -5,6 +5,8 @@ AWS_CA_REPO="ESB-Artifacts"
 AWS_CA_DOMAIN="luminus"
 AWS_CA_DOMAIN_OWNER="281885323515"
 AWS_REGION="eu-west-3"
+#run:
+#/home/aceuser/scripts/upload_to_aws_codeartefact.sh ./artifact/$BUILD_PROJECT_NAME.bar ./artifact/tag.txt
 
 #configure aws credentials
 aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
@@ -42,7 +44,7 @@ upload_response=$(aws codeartifact publish-package-version \
 echo "$upload_response"
 
 #build codeartifact url
-artifact_url="https://$AWS_CA_DOMAIN.d.codeartifact.$AWS_REGION.amazonaws.com/$AWS_CA_REPO/generic/$(basename $BAR_FILE)/$BAR_FILE_VERSION/$(basename $BAR_FILE)"
+artifact_url="https://${AWS_CA_DOMAIN}-${AWS_CA_DOMAIN_OWNER}.d.codeartifact.$AWS_REGION.amazonaws.com/generic/$AWS_CA_REPO/$(basename $BAR_FILE)/$BAR_FILE_VERSION/$(basename $BAR_FILE)"
 echo "Uploaded Artifact URL: $artifact_url"
 #cleanup authorization file
 rm auth.txt

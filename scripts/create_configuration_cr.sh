@@ -7,7 +7,7 @@ properties_file=$3
 
 # Read properties file line by line
 echo "Reading $properties_file"
-while IFS=';' read -r file_name template_file properties; do
+while IFS=';' read -r file_name template_file properties || [[ -n $properties ]]; do
   # Split properties into key-value pairs
   IFS=';' read -ra key_values <<< "$properties"
   output_file="${output_path}/${file_name}.yaml"
@@ -36,3 +36,4 @@ while IFS=';' read -r file_name template_file properties; do
     echo "$line" >> "$output_file"
   done < "$template_file"
 done < "$properties_file"
+

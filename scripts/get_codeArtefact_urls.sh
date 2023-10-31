@@ -47,7 +47,7 @@ for package in "${package_names[@]}"; do
       --format generic \
       --output json | grep -o '"version": "[^"]*' | grep -o '[^"]*$' | sort -rV | head -n 1)
 
-  download_url="https://$AWS_CA_DOMAIN.d.codeartifact.$AWS_REGION.amazonaws.com/$AWS_CA_REPO/generic/$package/$latest_version/$package"
+  download_url="https://${AWS_CA_DOMAIN}-${AWS_CA_DOMAIN_OWNER}.d.codeartifact.$AWS_REGION.amazonaws.com/generic/$AWS_CA_REPO/$package/$latest_version/$package"
   # Append the URL to the array
   urls+=("    - '$download_url'")
 done

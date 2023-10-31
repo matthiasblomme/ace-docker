@@ -7,7 +7,10 @@ dependencies_file=$3
 configurations_file=$4
 
 #get bar urls
-bar_urls="$(/home/aceuser/scripts/get_codeArtefact_urls.sh $dependencies_file)";
+#codeartifact
+#bar_urls="$(/home/aceuser/scripts/get_codeArtefact_urls.sh $dependencies_file)";
+#s3
+bar_urls="$(/home/aceuser/scripts/get_s3_urls.sh $dependencies_file)"
 config_array=()
 
 #get config urls
