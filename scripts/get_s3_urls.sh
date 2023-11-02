@@ -19,7 +19,8 @@ urls=()
 # Loop through each package name and retrieve the latest version from CodeArtifact
 for package in "${package_names[@]}"; do
   # Get the latest version of the package from S3
-  download_url=$(aws s3 presign "s3://${S3_ARTIFACT_BUCKET}/$package")
+  download_url=$(aws s3 presign "s3://${S3_ARTIFACT_BUCKET}/$package" --expires-in 604800)
+  #download_url=https://${S3_ARTIFACT_BUCKET}.s3.eu-west-3.amazonaws.com/$package
   # Append the URL to the array
   urls+=("    - '$download_url'")
 done
