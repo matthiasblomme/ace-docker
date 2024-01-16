@@ -67,8 +67,7 @@ while true; do
     download_url=${gitlab_base_url}/${gitlab_project_id}/packages/generic/${name}/${latest_version}/${name}.bar
     echo "retreiving $download_url"
     #download
-    curl --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "$download_url" --output ./${name}.bar
-
+    curl --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "$download_url" --output /home/aceuser/sources/${name}.bar
 		echo "Deploying ${name}.bar"
 		/home/aceuser/scripts/deploy.sh /home/aceuser/sources/${name}.bar
 	done

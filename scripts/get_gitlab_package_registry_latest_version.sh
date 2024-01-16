@@ -42,6 +42,7 @@ version_gt() {
 }
 
 # Fetch the list of packages
+#TODO: capture 401
 packages=$(curl -s -H "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "${API_URL}")
 #echo $packages
 # Check if the packages variable is empty

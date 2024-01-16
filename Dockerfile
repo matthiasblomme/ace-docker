@@ -27,8 +27,8 @@ ENV SOAPUI_VERSION=${SOAPUI_VERSION}
 # Install basic linux utils
 RUN microdnf update -y && microdnf install -y util-linux tar unzip findutils
 # Download and install aws cli
-RUN echo $AWS_ACCESS_KEY_ID
-RUN echo $AWS_SECRET_ACCESS_KEY
+#RUN echo $AWS_ACCESS_KEY_ID
+#RUN echo $AWS_SECRET_ACCESS_KEY
 RUN mkdir -p /opt/aws/cli
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/opt/aws/awscliv2.zip"
 RUN unzip /opt/aws/awscliv2.zip -d /opt/aws/cli > /dev/null 2>&1
@@ -67,9 +67,9 @@ RUN microdnf update -y && microdnf install -y findutils util-linux git tar java-
 RUN microdnf reinstall tzdata -y
 
 # Install aws cli
-COPY --from=builder /opt/aws/cli /opt/aws/cli
-RUN /opt/aws/cli/aws/install
-RUN aws --version
+#COPY --from=builder /opt/aws/cli /opt/aws/cli
+#RUN /opt/aws/cli/aws/install
+#RUN aws --version
 
 # Install ACE and accept the license
 COPY --from=builder /opt/ibm/ace-12 /opt/ibm/ace-12
