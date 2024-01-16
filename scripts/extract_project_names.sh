@@ -1,26 +1,9 @@
 #!/bin/bash
 
-AWS_CA_REPO="ESB-Artifacts"
-AWS_CA_DOMAIN="luminus"
-AWS_CA_DOMAIN_OWNER="281885323515"
-AWS_REGION="eu-west-3"
-
-aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-aws configure set region $AWS_REGION
-
-aws codeartifact get-authorization-token \
-    --domain $AWS_CA_DOMAIN \
-    --domain-owner $AWS_CA_DOMAIN_OWNER \
-    --query authorizationToken \
-    --output text > auth.txt
-export AWS_CODEARTIFACT_AUTH_TOKEN=$(cat auth.txt)
-aws codeartifact login \
-    --tool twine \
-    --repository $AWS_CA_REPO \
-    --domain $AWS_CA_DOMAIN \
-    --domain-owner $AWS_CA_DOMAIN_OWNER \
-    --region $AWS_REGION
+#  Base variables
+gitlab_base_url="https://gitlab.com/api/v4/projects"
+gitlab_project_id="47003423"
+ACCESS_TOKEN=$RETREIVE_PACKAGE_REGISTRY
 
 # Declare an empty array to store required project names
 project_names=()
@@ -28,14 +11,28 @@ final_project_names=()
 search_path="/home/aceuser/ace-server/run/"
 dependencies_file="./artifact/dependencies.txt"
 
+# Function to get version of a specific package
+get_version_of_package() {
+    local package_name=$1
+    for entry in "${package_versions[@]}"; do
+        if [[ $entry == "$package_name:"* ]]; then
+            echo "${entry#*: }"
+            return
+        fi
+    done
+    echo "Package not found"
+}
+
 # Always add default dependencies
 while IFS= read -r dependency; do
   project_names+=("${dependency%.bar}")
 done < "$dependencies_file"
 
+# Get all latest package versions
+IFS=$'\n' read -r -d '' -a package_versions < <(/home/aceuser/scripts/get_gitlab_package_registry_latest_version.sh && printf '\0')
+
 # Start the main loop
 while true; do
-
 	# Find all .project files and loop through them
 	for file in $(find $search_path -type f -name "*.descriptor"); do
 		# Use grep with Perl-compatible regex to extract project names and add them to the array\
@@ -63,24 +60,14 @@ while true; do
 	# Perform download for all required projects
 	for name in "${final_project_names[@]}"; do
 		echo "Downloading required project: $name"
-		latest_version=$(aws codeartifact list-package-versions \
-        --domain $AWS_CA_DOMAIN \
-        --domain-owner $AWS_CA_DOMAIN_OWNER \
-        --repository $AWS_CA_REPO \
-        --format generic \
-        --namespace esb-artifacts \
-        --package "${name}.bar" \
-        --output json | awk -F '"' '/"version":/{print $4}' | sort -r | head -n 1)
-    aws codeartifact get-package-version-asset \
-      --domain $AWS_CA_DOMAIN \
-      --domain-owner $AWS_CA_DOMAIN_OWNER \
-      --repository $AWS_CA_REPO \
-      --format generic \
-      --namespace esb-artifacts \
-      --package "${name}.bar" \
-      --package-version "$latest_version" \
-      --asset "${name}.bar" \
-      /home/aceuser/sources/${name}.bar
+		#get the latest version
+		latest_version=$(get_version_of_package "$name")
+
+		#build gitlab download url
+    download_url=${gitlab_base_url}/${gitlab_project_id}/packages/generic/${name}/${latest_version}/${name}.bar
+    echo "retreiving $download_url"
+    #download
+    curl --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "$download_url" --output ./${name}.bar
 
 		echo "Deploying ${name}.bar"
 		/home/aceuser/scripts/deploy.sh /home/aceuser/sources/${name}.bar

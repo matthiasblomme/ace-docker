@@ -6,11 +6,7 @@ output_file=$2
 dependencies_file=$3
 configurations_file=$4
 
-#get bar urls
-#codeartifact
-#bar_urls="$(/home/aceuser/scripts/get_codeArtefact_urls.sh $dependencies_file)";
-#s3
-bar_urls="$(/home/aceuser/scripts/get_s3_urls.sh $dependencies_file)"
+bar_urls="$(/home/aceuser/scripts/get_gitlab_package_registry_urls.sh $dependencies_file)"
 config_array=()
 
 #get config urls
