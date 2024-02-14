@@ -35,7 +35,8 @@ while IFS= read -r line; do
   fi
 
   if [[ $line == *"\$\$IrName\$\$"* ]]; then
-    modified_line=${line//\$\$IrName\$\$/${BUILD_PROJECT_NAME}}
+    lower_case_project_name=$(echo $BUILD_PROJECT_NAME | tr '[:upper:]' '[:lower:]')
+    modified_line=${line//\$\$IrName\$\$/${lower_case_project_name}}
     echo "$modified_line" >> "$output_file"
     write_original=false
   fi

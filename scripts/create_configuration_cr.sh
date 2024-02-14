@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Store command line parameters
 output_path=$1
 resource_path=$2
@@ -7,8 +6,12 @@ properties_file=$3
 
 # Read properties file line by line
 echo "Reading $properties_file"
+
 while IFS=';' read -r file_name template_file properties || [[ -n $properties ]]; do
   # Split properties into key-value pairs
+  #if file_name is empty, stop
+  if [ -z "$file_name" ]; then break fi;
+
   IFS=';' read -ra key_values <<< "$properties"
   output_file="${output_path}/${file_name}.yaml"
   echo "Creating $output_file"
@@ -28,7 +31,7 @@ while IFS=';' read -r file_name template_file properties || [[ -n $properties ]]
         key="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         if [[ "$key" == "DATA" ]]; then
-          value=$(base64 "${resource_path}/${value}")
+          value=$(base64 -w 0 "${resource_path}/${value}")
         fi
         line="${line//\$\$$key\$\$/$value}"
       fi

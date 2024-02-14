@@ -33,7 +33,7 @@ IFS=$'\n' read -r -d '' -a package_versions < <(/home/aceuser/scripts/get_gitlab
 
 # Start the main loop
 while true; do
-	# Find all .project files and loop through them
+	# Find all project dependencies and loop through them
 	for file in $(find $search_path -type f -name "*.descriptor"); do
 		# Use grep with Perl-compatible regex to extract project names and add them to the array\
 		while IFS= read -r project_name; do
