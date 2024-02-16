@@ -42,13 +42,23 @@ version_gt() {
 }
 
 # Fetch the list of packages
-#TODO: capture 401
 packages=$(curl -s -H "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "${API_URL}")
 #echo $packages
 # Check if the packages variable is empty
 if [ -z "$packages" ]; then
     echo "No packages found or error in fetching packages"
     exit 1
+fi
+# Check if packages contains 401
+if [[ $packages == *"401"* ]]; then
+  echo "GitLab authentication failure, received 401 on ${API_URL}"
+  exit 1
+fi
+
+# Check if packages contains 401
+if [[ $packages == *"404"* ]]; then
+  echo "GitLab connection failure, received 404 on ${API_URL}"
+  exit 1
 fi
 
 # Parse JSON and update the latest version for each package

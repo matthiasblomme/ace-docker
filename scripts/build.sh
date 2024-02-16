@@ -23,12 +23,15 @@ get_version_of_package() {
 echo "CustomNodes.bar" >> ./artifact/dependencies.txt
 
 # Deploy to resolve dependencies
+printf "\n"
 echo "running ibmint deploy --input-path $sourceDir --output-work-directory $workDir"
 ibmint deploy --input-path $sourceDir --output-work-directory $workDir
 
 # Download al dependencies
 /home/aceuser/scripts/extract_project_names.sh
 
+printf "\n"
+echo "Building with: "
 # List the applications
 applicationList=$(find /home/aceuser/sources/${BUILD_PROJECT_NAME} -maxdepth 1 -mindepth 1 -type d ! -name '.*' ! -name 'soapui' ! -name 'readme' -print | sort | xargs -I {} basename {} | tr '\n' ' ')
 echo "applications: $applicationList"
@@ -40,6 +43,8 @@ echo "libraries: $libraryList"
 #g Gt all latest package versions
 IFS=$'\n' read -r -d '' -a package_versions < <(/home/aceuser/scripts/get_gitlab_package_registry_latest_version.sh && printf '\0')
 
+printf "\n"
+echo "Retreiving dependencies"
 # Clone dependency sources
 for library in $libraryList; do
   latest_version=$(get_version_of_package $library)
@@ -52,9 +57,12 @@ for library in $libraryList; do
 done
 
 # Echo directory contents of /home/aceuser/sources/libraries
+printf "\n"
 echo "Retreived dependencies:"
 ls -l /home/aceuser/sources/libraries
 
 #build code with all dependencies
+printf "\n"
+echo "building the bar file"
 echo "/home/aceuser/scripts/buildBar.sh /home/aceuser/sources/${BUILD_PROJECT_NAME} $applicationList $libraryList"
 /home/aceuser/scripts/buildBar.sh /home/aceuser/sources/${BUILD_PROJECT_NAME} $applicationList $libraryList
