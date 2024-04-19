@@ -46,7 +46,7 @@ else
     elif [[ "$branch" =~ fix\/ ]]; then
       ((fix++))
     else
-      echo "Error: Unsupported branch '$branch'."
+      echo "Error: Unsupported branch '$branch'. Please use features/* or fix/*"
       exit 1
     fi
 

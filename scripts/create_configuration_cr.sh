@@ -9,9 +9,7 @@ echo "Reading $properties_file"
 
 while IFS=';' read -r file_name template_file properties || [[ -n $properties ]]; do
   # Split properties into key-value pairs
-  #if file_name is empty, stop
-  if [ -z "$file_name" ]; then break fi;
-
+  #TODO: if there is no data, stop
   IFS=';' read -ra key_values <<< "$properties"
   output_file="${output_path}/${file_name}.yaml"
   echo "Creating $output_file"

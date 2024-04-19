@@ -19,9 +19,6 @@ get_version_of_package() {
 # Load mqsi profile
 . /opt/ibm/ace-12/server/bin/mqsiprofile
 
-# Insert default dependency
-echo "CustomNodes.bar" >> ./artifact/dependencies.txt
-
 # Deploy to resolve dependencies
 printf "\n"
 echo "running ibmint deploy --input-path $sourceDir --output-work-directory $workDir"
@@ -29,6 +26,10 @@ ibmint deploy --input-path $sourceDir --output-work-directory $workDir
 
 # Download al dependencies
 /home/aceuser/scripts/extract_project_names.sh
+if [ $? -eq 1 ]; then
+    echo "Failed to download dependencies, terminating"
+    exit 1
+fi
 
 printf "\n"
 echo "Building with: "

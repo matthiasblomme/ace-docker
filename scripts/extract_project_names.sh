@@ -63,6 +63,12 @@ while true; do
 		#get the latest version
 		latest_version=$(get_version_of_package "$name")
 
+		# fail of latest version matches 'Package not found'
+		if [ "$latest_version" = "Package not found" ]; then
+		  echo "Package $name not found,  terminating"
+		  exit 1
+		fi
+
 		#build gitlab download url
     download_url=${gitlab_base_url}/${gitlab_project_id}/packages/generic/${name}/${latest_version}/${name}.bar
     echo "retreiving $download_url"

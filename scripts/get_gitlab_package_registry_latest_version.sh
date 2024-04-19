@@ -50,13 +50,13 @@ if [ -z "$packages" ]; then
     exit 1
 fi
 # Check if packages contains 401
-if [[ $packages == *"401"* ]]; then
+if [[ $packages == *"401 Unauthorized"* ]]; then
   echo "GitLab authentication failure, received 401 on ${API_URL}"
   exit 1
 fi
 
 # Check if packages contains 401
-if [[ $packages == *"404"* ]]; then
+if [[ $packages == *"404 Not Found"* ]]; then
   echo "GitLab connection failure, received 404 on ${API_URL}"
   exit 1
 fi
