@@ -20,10 +20,12 @@ cd "$target_dir" || exit 1
 latest_tag=$(git describe --tags --abbrev=0)
 
 echo "Found tag $latest_tag"
+tag_prefix="$BUILD_PROJECT_NAME-v"
 
 # If there are no tags, create the initial tag with v1.0.0 format
 if [ -z "$latest_tag" ]; then
-    latest_tag="v1.0.0"
+    version="1.0.0"
+    IFS='.' read -r major minor fix <<< "$version"
 else
     # If tags exist, parse the version part
     tag_prefix=$(echo "$latest_tag" | sed -n 's/\(.*\)\([0-9]\+\.[0-9]\+\.[0-9]\+\)/\1/p')
@@ -35,6 +37,9 @@ else
         exit 1
     fi
 
+    if [ -z "$tag_prefix" ] || [ "$tag_prefix" = "v" ]; then
+        tag_prefix="$BUILD_PROJECT_NAME-v"
+    fi
 
     IFS='.' read -r major minor fix <<< "$version"
 
@@ -49,9 +54,9 @@ else
       echo "Error: Unsupported branch '$branch'. Please use features/* or fix/*"
       exit 1
     fi
-
-    latest_tag="$tag_prefix$major.$minor.$fix"
 fi
+
+latest_tag="$tag_prefix$major.$minor.$fix"
 
 # Write the major.minor.fix part of the tag to tag.txt in ./artifact directory
 echo "$major.$minor.$fix" > "$current_dir/artifact/tag.txt"

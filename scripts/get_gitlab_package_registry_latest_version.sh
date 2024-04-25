@@ -8,15 +8,15 @@ PROJECT_ID="47003423"
 ACCESS_TOKEN=$RETREIVE_PACKAGE_REGISTRY
 
 # API URL
-API_URL="https://gitlab.com/api/v4/projects/${PROJECT_ID}/packages"
+API_URL="https://gitlab.com/api/v4/projects/${PROJECT_ID}/packages?order_by=version&sort=desc&page="
 
 # Optional package name parameter
 PACKAGE_NAME=$1
+PAGE=0
 
 # Array to keep track of the latest versions
 declare -A latest_versions
 
-# Function to compare versions
 # Function to compare versions
 version_gt() {
     IFS='.' read -ra VER1 <<< "$1"
@@ -42,33 +42,43 @@ version_gt() {
 }
 
 # Fetch the list of packages
-packages=$(curl -s -H "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "${API_URL}")
-#echo $packages
-# Check if the packages variable is empty
-if [ -z "$packages" ]; then
-    echo "No packages found or error in fetching packages"
-    exit 1
-fi
-# Check if packages contains 401
-if [[ $packages == *"401 Unauthorized"* ]]; then
-  echo "GitLab authentication failure, received 401 on ${API_URL}"
-  exit 1
-fi
+while :; do
+    packages=$(curl -s -H "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "${API_URL}${PAGE}")
 
-# Check if packages contains 401
-if [[ $packages == *"404 Not Found"* ]]; then
-  echo "GitLab connection failure, received 404 on ${API_URL}"
-  exit 1
-fi
-
-# Parse JSON and update the latest version for each package
-while read -r name version; do
-    #echo "Checking package: $name, Version: $version"
-    if [ -z "${latest_versions[$name]}" ] || version_gt "$version" "${latest_versions[$name]}"; then
-        #echo "Updating $name to version $version"
-        latest_versions[$name]="$version"
+    # Check if the packages variable is empty
+    if [ "$packages" == "[]" ]; then
+        echo "Last page found"
+        break
     fi
-done < <(echo "$packages" | jq -r '.[] | "\(.name) \(.version)"')
+
+    # Check if packages contains 401
+    if [[ $packages == *"401 Unauthorized"* ]]; then
+        echo "GitLab authentication failure, received 401 on ${API_URL}"
+        exit 1
+    fi
+
+    # Check if packages contains 404
+    if [[ $packages == *"404 Not Found"* ]]; then
+        echo "GitLab connection failure, received 404 on ${API_URL}"
+        exit 1
+    fi
+
+    # Parse JSON and update the latest version for each package
+    while read -r name version; do
+        if [ -z "${latest_versions[$name]}" ] || version_gt "$version" "${latest_versions[$name]}"; then
+            latest_versions[$name]="$version"
+        fi
+    done < <(echo "$packages" | jq -r '.[] | "\(.name) \(.version)"')
+
+    # Increment the page number
+    ((PAGE++))
+    echo "Page $PAGE"
+
+    # Break the loop if the packages response is empty
+    if [ -z "$packages" ]; then
+        break
+    fi
+done
 
 # Print the latest version of the specified package or all packages
 if [ -z "$PACKAGE_NAME" ]; then
