@@ -17,9 +17,9 @@ current_dir=$(pwd)
 cd "$target_dir" || exit 1
 
 # List the latest git tag
-latest_tag=$(git describe --tags --abbrev=0)
-
+latest_tag=$(git describe --tags --abbrev=0 $(git rev-list --tags --max-count=1))
 echo "Found tag $latest_tag"
+
 tag_prefix="$BUILD_PROJECT_NAME-v"
 
 # If there are no tags, create the initial tag with v1.0.0 format
