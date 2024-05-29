@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This script retrieves the latest version of a specified package from the GitLab package registry.
+# It handles pagination to ensure all available versions are considered.
+# The latest version is determined and printed for further use in the pipeline.
+
 # Define the GitLab project ID
 PROJECT_ID="47003423"
 
@@ -7,7 +11,7 @@ PROJECT_ID="47003423"
 # Replace with your actual access token
 ACCESS_TOKEN=$RETREIVE_PACKAGE_REGISTRY
 
-# API URL
+# API URL with pagination
 API_URL="https://gitlab.com/api/v4/projects/${PROJECT_ID}/packages?order_by=version&sort=desc&page="
 
 # Optional package name parameter
@@ -19,9 +23,11 @@ declare -A latest_versions
 
 # Function to compare versions
 version_gt() {
+    # Split version numbers into arrays
     IFS='.' read -ra VER1 <<< "$1"
     IFS='.' read -ra VER2 <<< "$2"
 
+    # Compare each part of the version number
     for ((i=0; i<${#VER1[@]}; i++)); do
         if [[ -z ${VER2[i]} ]]; then
             # VER2 has less parts, VER1 is greater
@@ -38,26 +44,26 @@ version_gt() {
         return 1
     fi
 
-    return 1 # versions are equal or something unexpected happened
+    return 1 # Versions are equal or something unexpected happened
 }
 
-# Fetch the list of packages
+# Loop to fetch the list of packages from all pages
 while :; do
     packages=$(curl -s -H "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "${API_URL}${PAGE}")
 
-    # Check if the packages variable is empty
+    # Check if the packages variable is an empty array (last page)
     if [ "$packages" == "[]" ]; then
         echo "Last page found"
         break
     fi
 
-    # Check if packages contains 401
+    # Check if the packages variable contains a 401 error
     if [[ $packages == *"401 Unauthorized"* ]]; then
         echo "GitLab authentication failure, received 401 on ${API_URL}"
         exit 1
     fi
 
-    # Check if packages contains 404
+    # Check if the packages variable contains a 404 error
     if [[ $packages == *"404 Not Found"* ]]; then
         echo "GitLab connection failure, received 404 on ${API_URL}"
         exit 1
@@ -70,14 +76,9 @@ while :; do
         fi
     done < <(echo "$packages" | jq -r '.[] | "\(.name) \(.version)"')
 
-    # Increment the page number
+    # Increment the page number for the next API call
     ((PAGE++))
     echo "Page $PAGE"
-
-    # Break the loop if the packages response is empty
-    if [ -z "$packages" ]; then
-        break
-    fi
 done
 
 # Print the latest version of the specified package or all packages

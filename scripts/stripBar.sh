@@ -1,11 +1,21 @@
 #!/bin/bash
 
-barFile=$1
-#fail if $1 is not supplied
-if [ -z "$barFile" ]; then echo "no bar file specified";exit 1; fi
+# This script processes a BARfile by extracting and then re-adding only the META-INF
+# and the project specified by the BUILD_PROJECT_NAME environment variable.
 
-#fail if $barFile does not exist
-if [ ! -f "$barFile" ]; then echo "$barFile does not exist";exit 1; fi
+barFile=$1
+
+# Fail if no BAR file is specified as an argument
+if [ -z "$barFile" ]; then
+    echo "No BAR file specified"
+    exit 1
+fi
+
+# Fail if the specified BAR file does not exist
+if [ ! -f "$barFile" ]; then
+    echo "$barFile does not exist"
+    exit 1
+fi
 
 # Step 1: Create a temporary directory to hold the items
 mkdir temp_dir
