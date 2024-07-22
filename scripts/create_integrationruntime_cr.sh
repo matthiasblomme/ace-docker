@@ -9,15 +9,11 @@ input_file=$1  # Path to the input template file
 output_file=$2  # Path to the output file to be created
 dependencies_file=$3  # Path to the file containing dependency information
 configurations_file=$4  # Path to the file containing configuration information
+shared_configurations_file=$5  # Path to the file containing shared configuration information (like gitlabpackageregistryauth)
 
 # Retrieve bar URLs using an external script
 bar_urls="$(/home/aceuser/scripts/get_gitlab_package_registry_urls.sh $dependencies_file)"
 config_array=()
-
-# Always add 'gitlabpackageregistryauth' to the configuration array
-config_array+=("gitlabpackageregistryauth")
-
-# TODO: Consider switching to the shared_config/os_configs.txt for additional configurations if needed
 
 # Get configuration names from the configurations file
 while IFS= read -r line; do
@@ -25,10 +21,18 @@ while IFS= read -r line; do
     if [[ $line =~ NAME=\'([^\'\"]*)\' ]]; then
       config_array+=("${BASH_REMATCH[1]}")
     fi
-done < $configurations_file
+done < "$shared_configurations_file"
+
+# Get configuration names from the configurations file
+while IFS= read -r line; do
+    # Extract the value of the NAME key using regex
+    if [[ $line =~ NAME=\'([^\'\"]*)\' ]]; then
+      config_array+=("${BASH_REMATCH[1]}")
+    fi
+done < "$configurations_file"
 
 # Clear the output file if it exists
-echo '' > $output_file
+echo '' > "$output_file"
 
 # Process the input file line by line
 while IFS= read -r line; do
