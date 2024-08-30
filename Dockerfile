@@ -1,7 +1,7 @@
 # Build and run:
 #
 # docker build -t matthiasblomme/ace.runner:12.0.9.0  --file ./Dockerfile . --build-arg ACE_VERSION=12.0.12.2 --build-arg MQ_VERSION=9.3.5.1 --build-arg SOAPUI_VERSION=5.7.1 --build-arg AWS_ACCESS_KEY_ID=xxx --build-arg AWS_SECRET_ACCESS_KEY=xxx
-# docker run --name 12.0.9.0 -e LICENSE=accept -p 7600:7600 -p 7800:7800 --rm -ti matthiasblomme/ace.runner:12.0.9.0
+# docker run --name 12.0.12.2 -e LICENSE=accept -p 7600:7600 -p 7800:7800 --rm -ti matthiasblomme/ace.runner:12.0.12.2
 #
 # Can also mount a volume for the work directory:
 #

@@ -1,7 +1,19 @@
 #!/bin/bash
 
 # Define the path to the input file
-input_file="/mapped/environmentVariables.txt"
+input_file="/home/aceuser/generic/environmentVariables.txt"
+
+# Check if the vault directory exists, otherwise create it
+if [ ! -d /home/aceuser/ace-server/config/vault ]; then
+  echo "Vault directory not found. Creating..."
+  mqsivault --ext-vault-dir /home/aceuser/ace-server/config/vault --create --ext-vault-key "$ACE_VAULT_KEY"
+fi
+
+# Check if the input file exists
+if [ ! -f "$input_file" ]; then
+  echo "Input file '$input_file' not found. Stopping cleanly."
+  exit 0
+fi
 
 # Begin the output for environment variables
 echo "---"
