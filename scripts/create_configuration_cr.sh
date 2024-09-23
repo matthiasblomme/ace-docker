@@ -19,6 +19,11 @@ while IFS=';' read -r file_name template_file properties || [[ -n $properties ]]
     continue
   fi
 
+  if [[ "$template_file" == "manuallygenerated" ]]; then
+    echo "Skipping manually generated entry $file_name."
+    continue
+  fi
+
   # Split the properties part of the line into an array of key-value pairs
   IFS=';' read -ra key_values <<< "$properties"
 

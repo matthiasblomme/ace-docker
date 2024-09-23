@@ -5,8 +5,8 @@ input_file="/home/aceuser/generic/environmentVariables.txt"
 
 # Check if the vault directory exists, otherwise create it
 if [ ! -d /home/aceuser/ace-server/config/vault ]; then
-  echo "Vault directory not found. Creating..."
-  mqsivault --ext-vault-dir /home/aceuser/ace-server/config/vault --create --ext-vault-key "$ACE_VAULT_KEY"
+  echo "Vault directory not found. Stopping."
+  exit 0
 fi
 
 # Check if the input file exists
@@ -25,12 +25,12 @@ while IFS= read -r line; do
     type=$(echo "$line" | awk '{print $1}')
     name=$(echo "$line" | awk '{print $2}')
     item=$(echo "$line" | awk '{print $3}')
-    
+
     # Construct the decode path
     decode_path="credentials/${type}/${name}"
 
     # Run the mqsivault decode command
-    decode_output=$(mqsivault --ext-vault-dir /home/aceuser/ace-server/config/vault --ext-vault-key $ACE_VAULT_KEY --decode "$decode_path")
+    decode_output=$(mqsivault --work-dir /home/aceuser/ace-server --vault-key $ACE_VAULT_KEY --decode "$decode_path")
 
     # Extract the value of the item from the JSON output
     item_value=$(echo "$decode_output" | grep -o "\"$item\":\"[^\"]*\"" | sed "s/\"$item\":\"//;s/\"//")
