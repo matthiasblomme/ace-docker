@@ -17,18 +17,27 @@ config_array=()
 
 # Get configuration names from the configurations file
 while IFS= read -r line; do
-    # Extract the value of the NAME key using regex
-    if [[ $line =~ NAME=\'([^\'\"]*)\' ]]; then
-      config_array+=("${BASH_REMATCH[1]}")
-    fi
+  second_param=$(echo "$line" | cut -d';' -f2)
+  if [[ "$second_param" == "secret" ]]; then
+    continue
+  fi
+
+  # Extract the value of the NAME key using regex
+  if [[ $line =~ NAME=\'([^\'\"]*)\' ]]; then
+    config_array+=("${BASH_REMATCH[1]}")
+  fi
 done < "$shared_configurations_file"
 
 # Get configuration names from the configurations file
 while IFS= read -r line; do
-    # Extract the value of the NAME key using regex
-    if [[ $line =~ NAME=\'([^\'\"]*)\' ]]; then
-      config_array+=("${BASH_REMATCH[1]}")
-    fi
+  second_param=$(echo "$line" | cut -d';' -f2)
+  if [[ "$second_param" == "secret" ]]; then
+    continue
+  fi
+  # Extract the value of the NAME key using regex
+  if [[ $line =~ NAME=\'([^\'\"]*)\' ]]; then
+    config_array+=("${BASH_REMATCH[1]}")
+  fi
 done < "$configurations_file"
 
 # Clear the output file if it exists
